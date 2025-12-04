@@ -34,25 +34,26 @@ jobs:
         pip install --upgrade pip
         pip install buildozer cython==0.29.36
 
-    - name: Install Android SDK & NDK (Fix sdkmanager path)
+    - name: Install Android SDK & NDK
       run: |
         export ANDROID_HOME=$HOME/.buildozer/android/platform/android-sdk
+
         mkdir -p $ANDROID_HOME/cmdline-tools
 
         # Descargar Command Line Tools
         wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
         unzip commandlinetools-linux-9477386_latest.zip -d $ANDROID_HOME/cmdline-tools
 
-        # Mover carpeta a "tools" que Buildozer necesita
+        # Mover para que funcione con sdkmanager
         mv $ANDROID_HOME/cmdline-tools/cmdline-tools $ANDROID_HOME/cmdline-tools/tools
 
-        # Instalar SDKs
+        # Instalar SDKs obligatorios
         yes | $ANDROID_HOME/cmdline-tools/tools/bin/sdkmanager --sdk_root=$ANDROID_HOME \
           "platform-tools" \
           "platforms;android-33" \
           "build-tools;33.0.2"
 
-        # Instalar NDK r25b (requerido por p4a)
+        # Instalar NDK r25b (compatible con python-for-android)
         wget https://dl.google.com/android/repository/android-ndk-r25b-linux.zip
         unzip android-ndk-r25b-linux.zip -d $HOME/.buildozer/android/platform/
 
@@ -70,4 +71,5 @@ jobs:
       with:
         name: THOR_APK
         path: bin/*.apk
+
 
