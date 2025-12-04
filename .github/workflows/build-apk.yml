@@ -16,7 +16,7 @@ jobs:
       with:
         python-version: "3.11"
 
-    - name: Install dependencies
+    - name: Install system dependencies
       run: |
         sudo apt update
         sudo apt install -y \
@@ -24,32 +24,37 @@ jobs:
           python3-pip \
           git \
           zip \
-          unzip
+          unzip \
+          libffi-dev \
+          libssl-dev \
+          autoconf \
+          libtool \
+          pkg-config
 
         pip install --upgrade pip
         pip install buildozer cython==0.29.36
 
-    - name: Install Android SDK & NDK (25b)
+    - name: Install Android SDK & NDK (Fix sdkmanager path)
       run: |
-        mkdir -p $HOME/.buildozer/android/platform/android-sdk/cmdline-tools
-        mkdir -p $HOME/.buildozer/android/platform/
+        export ANDROID_HOME=$HOME/.buildozer/android/platform/android-sdk
+        mkdir -p $ANDROID_HOME/cmdline-tools
 
-        # Descargar NDK r25b
-        wget https://dl.google.com/android/repository/android-ndk-r25b-linux.zip
-        unzip android-ndk-r25b-linux.zip -d $HOME/.buildozer/android/platform/
-
-        # Descargar command line tools
+        # Descargar Command Line Tools
         wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
-        unzip commandlinetools-linux-9477386_latest.zip -d $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/
+        unzip commandlinetools-linux-9477386_latest.zip -d $ANDROID_HOME/cmdline-tools
 
-        # Mover carpeta a la ruta esperada por Buildozer ("tools")
-        mv $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/cmdline-tools \
-           $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/tools
+        # Mover carpeta a "tools" que Buildozer necesita
+        mv $ANDROID_HOME/cmdline-tools/cmdline-tools $ANDROID_HOME/cmdline-tools/tools
 
-        yes | $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/tools/bin/sdkmanager --sdk_root=$HOME/.buildozer/android/platform/android-sdk \
+        # Instalar SDKs
+        yes | $ANDROID_HOME/cmdline-tools/tools/bin/sdkmanager --sdk_root=$ANDROID_HOME \
           "platform-tools" \
           "platforms;android-33" \
           "build-tools;33.0.2"
+
+        # Instalar NDK r25b (requerido por p4a)
+        wget https://dl.google.com/android/repository/android-ndk-r25b-linux.zip
+        unzip android-ndk-r25b-linux.zip -d $HOME/.buildozer/android/platform/
 
     - name: Build APK
       env:
@@ -65,6 +70,7 @@ jobs:
       with:
         name: THOR_APK
         path: bin/*.apk
+
 
 
 
