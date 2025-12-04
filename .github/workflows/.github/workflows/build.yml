@@ -1,4 +1,4 @@
-name: Build APK with Buildozer
+name: THOR APK
 
 on:
   workflow_dispatch:
